@@ -60,14 +60,14 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
         inputFields = layer.pendingFields()
         leftFieldIdxs = []
         for f in leftFields:
-            idx = inputFields.indexFromName(f)
+            idx = inputFields.indexFromName(f.strip())
             if idx == -1:
                 raise GeoAlgorithmExecutionException('Field not found: %s' % f)
             leftFieldIdxs.append(idx)
 
         rightFieldIdxs = []
         for f in rightFields:
-            idx = inputFields.indexFromName(f)
+            idx = inputFields.indexFromName(f.strip())
             if idx == -1:
                 raise GeoAlgorithmExecutionException("Field not found: %s" % f)
             rightFieldIdxs.append(idx)
