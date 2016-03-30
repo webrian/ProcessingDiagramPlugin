@@ -53,8 +53,6 @@ class BarchartDiagramAlgorithm(DiagramAlgorithm):
         
         outputDir = self.getOutputValue(self.OUTPUT_DIRECTORY)
 
-        print layer
-
         # Get a list of used field indexes
         inputFields = layer.pendingFields()
         fieldIdxs = []
@@ -80,16 +78,18 @@ class BarchartDiagramAlgorithm(DiagramAlgorithm):
             # Get all values as absolute numbers
             values = np.array([float(attrs[i]) for i in fieldIdxs])
             # Calc ratios for all values
-            ratios = np.array([ (i/values.sum())*100 for i in values ])
+            ratios = values / values.sum() * 100
             x = np.arange(ratios.size)
-    
+
             # Get the correct color schema from the module
             cls = self.parseColorDefinition(color_schema, str(values.size)) 
 
             plt.axis('off')
 
             # Draw the pie chart with above values and colors
-            bars = plt.bar(x, ratios, color=cls, edgecolor='w')
+            bars = plt.bar(x, ratios, width=1.0, color=cls, edgecolor='w')
+
+            plt.ylim(ymax=100.0)
 
             # Save the plot as figure to the specified directory
             plt.savefig("%s/barcharts_%s.svg" % (outputDir, id_field), format="svg", transparent=True, frameon=False)

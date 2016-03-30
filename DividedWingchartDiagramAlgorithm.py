@@ -102,7 +102,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
             cls = self.parseColorDefinition(color_schema, str(lvalues.size))
 
             # Calc the angles per sector
-            langles = np.array([(i / lvalues.sum()) * np.pi for i in lvalues])
+            langles = lvalues / lvalues.sum() * np.pi
             # Calc the start angles, start is at +PI/2
             la = np.pi/2
             ltheta = []
@@ -119,7 +119,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
             # First get all right values
             rvalues = np.array([float(attrs[i]) for i in rightFieldIdxs])
             # Calc the right angles per sector
-            rangles = np.array([(-1)*(i / rvalues.sum()) * np.pi for i in rvalues])
+            rangles = (-1) * rvalues / rvalues.sum() * np.pi
             # Calc the right start angles, start is at +PI/2
             ra = np.pi/2
             rtheta = []
