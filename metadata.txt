@@ -1,0 +1,17 @@
+[general]
+name=Diagrams creation algorithms
+description=Diagrams creation algorithms provider for Processing Toolbox.
+category=Analysis
+version=0.1
+qgisMinimumVersion=2.0
+
+author=Adrian Weber
+email=webrian@gmx.net
+
+tags=diagrams,processing
+
+homepage=https://github.com/webrian/ProcessingDiagramPlugin
+icon=logo.png
+
+experimental=False
+deprecated=False
