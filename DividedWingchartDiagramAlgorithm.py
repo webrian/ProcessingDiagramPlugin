@@ -17,10 +17,11 @@ from DiagramAlgorithm import DiagramAlgorithm
 from processing.core.GeoAlgorithm import GeoAlgorithm
 from processing.core.GeoAlgorithmExecutionException import GeoAlgorithmExecutionException
 from processing.core.outputs import OutputDirectory
-from processing.core.parameters import ParameterVector
-from processing.core.parameters import ParameterTableField
+from processing.core.parameters import ParameterNumber
 from processing.core.parameters import ParameterSelection
 from processing.core.parameters import ParameterString
+from processing.core.parameters import ParameterTableField
+from processing.core.parameters import ParameterVector
 from processing.tools import dataobjects
 
 class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
@@ -30,6 +31,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
     LEFT_FIELDS = 'LEFT_FIELDS'
     RIGHT_FIELDS = 'RIGHT_FIELDS'
     COLOR_SCHEMA = 'COLOR_SCHEMA'
+    REFERENCE_SIZE = 'REFERENCE_SIZE'
     OUTPUT_DIRECTORY = 'OUTPUT_DIRECTORY'
 
     def defineCharacteristics(self):
@@ -41,6 +43,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
         self.addParameter(ParameterString(self.LEFT_FIELDS, self.tr("Left fields comma separated"), default="Fishery__1,Fishery__2,Fishery__3"))
         self.addParameter(ParameterString(self.RIGHT_FIELDS, self.tr("Right fields comma separated"), default="Fishery__4,Fishery__5,Fishery__6"))
         self.addParameter(ParameterSelection(self.COLOR_SCHEMA, self.tr("Color schema"), self.availableColorSchemas))
+        self.addParameter(ParameterNumber(self.REFERENCE_SIZE, self.tr("Reference size"), minValue=0.0, default=100.0))
         self.addOutput(OutputDirectory(self.OUTPUT_DIRECTORY, self.tr("Store to directory")))
 
 
@@ -53,6 +56,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
         rightFields = self.getParameterValue(self.RIGHT_FIELDS).split(',')
         colorSchemaIdx = self.getParameterValue(self.COLOR_SCHEMA)
         color_schema = self.availableColorSchemas[colorSchemaIdx]
+        refSize = float(self.getParameterValue(self.REFERENCE_SIZE))
 
         outputDir = self.getOutputValue(self.OUTPUT_DIRECTORY)
 
@@ -80,6 +84,10 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
         # Get the attribute index of the identifier field
         identifierIdx = inputFields.indexFromName(id_field)
 
+        # Calc reference radius
+        # Multiply the circle area by two since we deal with semi circles
+        refRadius = np.sqrt( 2.*refSize / np.pi )
+
         # Get the total count of features, this is used to set the progress
         nbrFeatures = layer.featureCount()
         # 1-based index of current feature
@@ -94,6 +102,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
             # Setup a polar figure without labels
             plt.axes(polar=True)
             plt.axis('off')
+            plt.ylim(ymax=1.0)
 
             # Handle the left wings
             # First get all left values
@@ -110,7 +119,12 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
                 ltheta.append(la)
                 la += langles[i]
 
-            lradii = np.array([1.0 for i in ltheta])
+            # Create an empty array which holds the radii
+            lradii = np.empty(len(ltheta))
+            # Scale the radius proportional to the size, again multiply by two
+            # since we deal with semi circles
+            lrad = np.sqrt( (2. * float(lvalues.sum())) / np.pi) / refRadius
+            lradii.fill(lrad)
             # Draw the left wings
             plt.bar(ltheta, lradii, width=langles, bottom=0.0, color=cls, edgecolor='w')
 
@@ -127,7 +141,9 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
                 rtheta.append(ra)
                 ra += rangles[i]
 
-            rradii = np.array([0.8 for i in rtheta])
+            rradii = np.empty(len(rtheta))
+            rrad = np.sqrt( 2. * float(rvalues.sum()) / np.pi) / refRadius
+            rradii.fill(rrad)
             # Draw the right wings
             plt.bar(rtheta, rradii, width=rangles, bottom=0.0, color=cls, edgecolor='w')
 
