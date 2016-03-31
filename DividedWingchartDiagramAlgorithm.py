@@ -95,7 +95,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
         # Loop all features
         for feature in layer.getFeatures():
             # Get all attributes of the current feature
-            attrs = feature.attributes()
+            attrs = np.array(feature.attributes())
             # Get the index as integer
             id_field = int(attrs[identifierIdx])
 
@@ -106,7 +106,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
 
             # Handle the left wings
             # First get all left values
-            lvalues = np.array([float(attrs[i]) for i in leftFieldIdxs])
+            lvalues = attrs[np.array(leftFieldIdxs)].astype(np.float)
             # Get the colors from the INI file
             cls = self.parseColorDefinition(color_schema, str(lvalues.size))
 
@@ -119,7 +119,9 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
                 ltheta.append(la)
                 la += langles[i]
 
-            # Create an empty array which holds the radii
+            # Create an empty array which holds the radii. This seems to be
+            # the most performant way to create an array with a fixed value,
+            # see also http://stackoverflow.com/a/13052254/1829038
             lradii = np.empty(len(ltheta))
             # Scale the radius proportional to the size, again multiply by two
             # since we deal with semi circles
@@ -131,7 +133,7 @@ class DividedWingchartDiagramAlgorithm(DiagramAlgorithm):
 
             # Handle the right wings
             # First get all right values
-            rvalues = np.array([float(attrs[i]) for i in rightFieldIdxs])
+            rvalues = attrs[np.array(rightFieldIdxs)].astype(np.float)
             # Calc the right angles per sector
             rangles = (-1) * rvalues / rvalues.sum() * np.pi
             # Calc the right start angles, start is at +PI/2
